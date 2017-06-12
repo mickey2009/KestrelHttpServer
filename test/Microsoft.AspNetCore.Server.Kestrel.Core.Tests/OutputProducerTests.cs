@@ -63,9 +63,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
             var frame = new Frame<object>(null, frameContext);
-            var socketOutput = new OutputProducer(pipe, "0", serviceContext.Log);
+            var outputProducer = new OutputProducer(pipe, "0", Mock.Of<ITimeoutControl>(), serviceContext.Log, _pipeFactory);
 
-            return socketOutput;
+            return outputProducer;
         }
     }
 }

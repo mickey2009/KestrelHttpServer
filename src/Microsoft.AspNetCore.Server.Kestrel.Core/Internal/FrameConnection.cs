@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private long _readTimingElapsedTicks;
         private long _readTimingBytesRead;
 
+        private bool _timingWrite;
+        private long _writeTimingElapsedTicks;
+
         private Task _lifetimeTask;
 
         public FrameConnection(FrameConnectionContext context)
@@ -301,6 +304,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             _readTimingPauseRequested = false;
                         }
                     }
+
+                    if (_timingWrite)
+                    {
+                        _writeTimingElapsedTicks += timestamp - _lastTimestamp;
+
+                        if (_writeTimingElapsedTicks > TimeSpan.FromSeconds(5).Ticks)
+                        {
+                            TimedOut = true;
+                            _frame.Abort(error: null);
+                        }
+                    }
                 }
             }
 
@@ -372,6 +386,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public void BytesRead(int count)
         {
             Interlocked.Add(ref _readTimingBytesRead, count);
+        }
+
+        public void StartTimingWrite()
+        {
+            _writeTimingElapsedTicks = 0;
+            _timingWrite = true;
+        }
+
+        public void StopTimingWrite()
+        {
+            _timingWrite = false;
         }
     }
 }
