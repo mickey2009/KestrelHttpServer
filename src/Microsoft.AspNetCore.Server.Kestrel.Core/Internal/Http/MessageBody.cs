@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public static MessageBody ZeroContentLengthClose => _zeroContentLengthClose;
 
+        public Task PumpTask { get; private set; }
+
         public bool RequestKeepAlive { get; protected set; }
 
         public bool RequestUpgrade { get; protected set; }
@@ -244,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 OnReadStart();
                 _context.HasStartedConsumingRequestBody = true;
-                _ = PumpAsync();
+                PumpTask = PumpAsync();
             }
         }
 
